@@ -1,0 +1,490 @@
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" xml:lang="en_US"><generator uri="https://jekyllrb.com/" version="3.8.6">Jekyll</generator><link href="https://azure.github.io/AppService/feed.xml" rel="self" type="application/atom+xml" /><link href="https://azure.github.io/AppService/" rel="alternate" type="text/html" hreflang="en_US" /><updated>2020-10-09T00:24:12+00:00</updated><id>https://azure.github.io/AppService/feed.xml</id><title type="html">Azure App Service</title><subtitle>Announcements, updates, and release notes from the Azure App Service product team.</subtitle><author><name>Azure App Service</name></author><entry><title type="html">General Availability of Private Endpoint for Web App</title><link href="https://azure.github.io/AppService/2020/10/06/private-endpoint-app-service-ga.html" rel="alternate" type="text/html" title="General Availability of Private Endpoint for Web App" /><published>2020-10-06T00:00:00+00:00</published><updated>2020-10-06T00:00:00+00:00</updated><id>https://azure.github.io/AppService/2020/10/06/private-endpoint-app-service-ga</id><content type="html" xml:base="https://azure.github.io/AppService/2020/10/06/private-endpoint-app-service-ga.html">&lt;p&gt;We are happy to announce Private Endpoint for Web App is now Generally Available in all Azure public regions, for both Windows and Linux apps, containerized or not. To use Private Endpoint your app must be hosted on PremiumV2, PremiumV3 or function Premium plan.&lt;/p&gt;
+
+&lt;p&gt;Private Endpoint enables you to consume your app through a specific IP address located in your Azure Virtual Network (VNet), eliminating the exposure of your app to the public Internet.
+Private Endpoint provides at the same time a solution to remove the data exfiltration risk, you can secure your VNet with NSG denying any outbound flow and a Private Endpoint will let you go only to the specified app linked to this endpoint.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/AppService/media/2020/03/privatelink-flow.png&quot; alt=&quot;Private Link Flow&quot; /&gt;&lt;/p&gt;
+
+&lt;h3 id=&quot;private-endpoint-vs-service-endpoints&quot;&gt;Private Endpoint vs Service Endpoints&lt;/h3&gt;
+
+&lt;p&gt;Service Endpoints is used to secure the app to only being reachable from specific subnets. 
+Private Endpoint provides a way to expose your app on an IP address in your VNet and removes all other public access. This not only security for the app but can also be combined with Network Security Groups (NSG) to secure your network and prevent data leakage.&lt;/p&gt;
+
+&lt;h3 id=&quot;private-endpoint-vs-app-service-environment&quot;&gt;Private Endpoint vs App Service Environment&lt;/h3&gt;
+
+&lt;p&gt;Having your app only accessible on a private address in your VNet is something that was previously only possible by using an ILB App Service Environment or an Application Gateway with an internal inbound address. The difference between using Private Endpoint and an ILB ASE is that with an ILB ASE you have single tenant system that can host many apps behind one IP address in your VNet. With Private Endpoint, your app runs in the public App service and you have only one app behind one IP address. If you want to apply network security external to your application, then you still only get that with an ILB ASE. If you only need a private address in your VNet, then Private Endpoint can give you that.&lt;/p&gt;
+
+&lt;h3 id=&quot;private-endpoint-combined-with-vnet-integration&quot;&gt;Private Endpoint combined with VNet integration&lt;/h3&gt;
+
+&lt;p&gt;Private Endpoint provides a private IP address for inbound traffic only to your app. It does not enable your app to make outbound calls into your network. If you want to have all inbound and outbound in your VNet, then you need to use both Private Endpoint and Regional VNet Integration in two separate subnets. With Private Endpoint you can secure the inbound and with VNet Integration you can secure the outbound.&lt;/p&gt;
+
+&lt;p&gt;To get started, read the documentation &lt;a href=&quot;https://docs.microsoft.com/azure/app-service/networking/private-endpoint&quot;&gt;here&lt;/a&gt;&lt;/p&gt;</content><author><name>Azure App Service</name></author><category term="networking" /><summary type="html">We are happy to announce Private Endpoint for Web App is now Generally Available in all Azure public regions, for both Windows and Linux apps, containerized or not. To use Private Endpoint your app must be hosted on PremiumV2, PremiumV3 or function Premium plan.</summary></entry><entry><title type="html">Zero to Hero with App Service, Part 7: Multi-tier web applications</title><link href="https://azure.github.io/AppService/2020/10/05/zero_to_hero_pt7.html" rel="alternate" type="text/html" title="Zero to Hero with App Service, Part 7: Multi-tier web applications" /><published>2020-10-05T00:00:00+00:00</published><updated>2020-10-05T00:00:00+00:00</updated><id>https://azure.github.io/AppService/2020/10/05/zero_to_hero_pt7</id><content type="html" xml:base="https://azure.github.io/AppService/2020/10/05/zero_to_hero_pt7.html">&lt;p&gt;The Azure App Service is offered as two deployment types: the multi-tenant service and the App Service Environment. In the multi-tenant service there are thousands of customers on the same infrastructure. Your apps are always secured but they share the network, address space, front ends, and some other components.  In an App Service Environment you get a single tenant version of App Service that runs in your Azure Virtual Network. In this article, you will learn how to build network-secured, multi-tier web applications in the multi-tenant App Service.&lt;/p&gt;
+
+&lt;h2 id=&quot;multi-tier-web-applications&quot;&gt;Multi-tier web applications&lt;/h2&gt;
+
+&lt;p&gt;The obvious question to start with is, &lt;em&gt;what is a multi-tier web application&lt;/em&gt;?  A multi-tier web application is an application with a front end that makes calls to one or more API applications behind it. By itself this is not a complex concept, but when a user wants to secure the API applications so they are not internet accessible the architecture becomes more complex.&lt;/p&gt;
+
+&lt;p&gt;There are multiple ways to secure your API applications so that they can only be reached from your front end applications. They all involve securing your API application’s inbound traffic. There are multiple features that could be used for this purpose:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;a href=&quot;https://docs.microsoft.com/azure/app-service/app-service-ip-restrictions#service-endpoints&quot;&gt;Service endpoints&lt;/a&gt; secure the listening service. With Service Endpoints, the source address must be in an Azure Virtual Network subnet.&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://docs.microsoft.com/azure/app-service/networking/private-endpoint&quot;&gt;Private endpoints&lt;/a&gt; prevent data exfiltration and secure the listening service. With private endpoints, you can reach the web app from anywhere that has network access to the private endpoint address.&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://docs.microsoft.com/azure/app-service/app-service-ip-restrictions#service-endpoints&quot;&gt;Access restrictions&lt;/a&gt; can lock down your inbound traffic to a set of address blocks.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Each of those features satisfies a specific situation and there are trade offs.  Access restrictions are useful if you have public address access points like NAT devices or perhaps a virtual network device with a dedicated public address.  If you use service endpoints, you do not add any new resources to your subscription and are able to use one subnet.  If you use private endpoints you will add a new top level resource, add Azure DNS private zones to your VNet and will require two subnets. Let’s now dicsuss each of these options in greater detail.&lt;/p&gt;
+
+&lt;h2 id=&quot;service-endpoints&quot;&gt;Service endpoints&lt;/h2&gt;
+
+&lt;p&gt;To configure a multi-tier application using service endpoints to secure your API application, you need to use VNet Integration with your front end app and service endpoints with your API app. Set service endpoints on the integration subnet used by your Front End application. This solution is fast to set up and easy as well.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/AppService/media/2020/09/one-fe-one-service-endpoint.png&quot; alt=&quot;simple service endpoints&quot; class=&quot;align-center&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;If you have multiple front end apps, the configuration is the same if all of the front end apps are in the same App Service plan.  With VNet Integration, the apps in the same App Service plan can use the same integration subnet.   If you have additional front end applications in separate App Service plans, you will need to use multiple integration subnets. In this situation, service endpoints must be configured against each of the integration subnets. With VNet Integration, you cannot have more than one App Service plan configured with a subnet.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/AppService/media/2020/09/two-fe-one-service-endpoint.png&quot; alt=&quot;multiple front end apps with one api app&quot; class=&quot;align-center&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;If you have multiple API apps and multiple front end apps from separate App Service plans, you need to configure VNet Integration from each front end app and then service endpoints on each API app against the integration subnets.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/AppService/media/2020/09/two-fe-two-service-endpoint.png&quot; alt=&quot;multiple front end apps with multiple api apps&quot; class=&quot;align-center&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;As you add front end applications, you need to configure service endpoints with each dependent API application. This means service endpoints are great at smaller scale. It can quickly get out of hand if you have many–&lt;em&gt;or an ever increasing number of&lt;/em&gt;–front end applications with multiple API applications. Managing the configuration can be confusing as the number of front ends grows.&lt;/p&gt;
+
+&lt;h2 id=&quot;private-endpoints&quot;&gt;Private endpoints&lt;/h2&gt;
+
+&lt;p&gt;With private endpoints, the configuration is both easier and harder. It is easier in that when you place a private endpoint in your VNet for an app, you are done managing the inbound traffic to your API app. Unlike with service endpoints, there is no additional configuration to your API app as you add new front end consumers.  It is harder because setting up private endpoints creates a new, top-level resource and Azure DNS private zones.&lt;/p&gt;
+
+&lt;p&gt;If you have one front end app or more than that, the configuration is the same.  You set up VNet Integration with the same VNet that your API app has a private endpoint in. You also have private endpoints configured on your API application.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/AppService/media/2020/09/one-fe-one-private-endpoint.png&quot; alt=&quot;private endpoints with api app&quot; class=&quot;align-center&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;If you have more than one front end app, the only difference is that this second front end app needs VNet Integration to be  configured with it. If this additional front end application is in a different App Service plan, it will use a separate subnet.  Each time you use VNet Integration from another App Service plan, you will need another subnet for integration.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/AppService/media/2020/09/two-fe-one-private-endpoint.png&quot; alt=&quot;private endpoint api app with multiple front ends&quot; class=&quot;align-center&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;If you have multiple API applications, you will need multiple private endpoints. Those private endpoints can be in the same subnet, or not.  Private endpoints are more flexible in this regard than VNet Integration. Once your API application has exposed itself with a private endpoint, any front end app that integrates with that VNet should be able to reach it.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/AppService/media/2020/09/two-fe-two-private-endpoint.png&quot; alt=&quot;multiple private endpoint api apps with multiple front ends&quot; class=&quot;align-center&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;At a small scale, private endpoints incurs more overhead. You will have more to manage and maintain than with service endpoints. On the other hand, private endpoints are a solution for data exfiltration concerns. They also do better at scale as it is easy to add more front end applications.&lt;/p&gt;
+
+&lt;h2 id=&quot;access-restrictions&quot;&gt;Access restrictions&lt;/h2&gt;
+
+&lt;p&gt;With access restrictions you can secure inbound traffic to a set of IP address blocks.  This is useful when you want to lock your traffic to a set of egress devices.  You can also use it with other edge protection services such as Azure Front Door. With respect to using it directly with multi-tier applications, you can secure your API applications to the egress addresses used by your front end applications. The problem with this approach is that the outbound addresses are shared with all of the other customers in the same scale unit. From a security review perspective it doesn’t look as secure as service endpoint or private endpoint based solutions.  So while it is possible and worth noting, it is not recommended to use access restrictions to create multi-tier web applications.&lt;/p&gt;</content><author><name>Azure App Service</name></author><category term="zero to hero" /><summary type="html">The Azure App Service is offered as two deployment types: the multi-tenant service and the App Service Environment. In the multi-tenant service there are thousands of customers on the same infrastructure. Your apps are always secured but they share the network, address space, front ends, and some other components. In an App Service Environment you get a single tenant version of App Service that runs in your Azure Virtual Network. In this article, you will learn how to build network-secured, multi-tier web applications in the multi-tenant App Service.</summary></entry><entry><title type="html">CPU Diagnostics Part 1: Identify and Diagnose High CPU issues</title><link href="https://azure.github.io/AppService/2020/10/05/Diagnose-App-with-High-CPU.html" rel="alternate" type="text/html" title="CPU Diagnostics Part 1: Identify and Diagnose High CPU issues" /><published>2020-10-05T00:00:00+00:00</published><updated>2020-10-05T00:00:00+00:00</updated><id>https://azure.github.io/AppService/2020/10/05/Diagnose%20App%20with%20High%20CPU</id><content type="html" xml:base="https://azure.github.io/AppService/2020/10/05/Diagnose-App-with-High-CPU.html">&lt;p&gt;This is part one of our deep dive on Diagnosing CPU utilization issues in Azure App Service. In this post, you will learn about measuring CPU utilization for all apps hosted in an App Service Plan and identifying apps that are consuming maximum CPU resources.&lt;/p&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;This post applies to Windows web apps on Azure App Service.&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;First, we will cover troubleshooting tools for debugging Web Apps running on Azure App Services for Windows. These steps can be applied to apps built using any framework such as ASP.NET, Node, PHP, or Java running on a dedicated hardware tier (Basic or higher).&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;Open a browser to the &lt;a href=&quot;https://portal.azure.com/&quot;&gt;Azure Portal&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;Navigate to one of oyur web apps&lt;/li&gt;
+  &lt;li&gt;On the left navigation bar, click the &lt;strong&gt;Diagnose and Solve Problems&lt;/strong&gt; tab&lt;/li&gt;
+  &lt;li&gt;Select &lt;strong&gt;Availability and Performance&lt;/strong&gt; section on the portal.&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;&lt;img src=&quot;/AppService/media/2020/09/high-cpu-diagnose-blade-overview.png&quot; alt=&quot;Diagnose Blade Overview&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;On this page, you can see an overview of your app’s health as well as various topics related to availability and performance. The time duration for the graph’s defaults is the last 24 hours, but you can modify it if needed.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/AppService/media/2020/09/high-cpu-avilability-and-performance-blade.png&quot; alt=&quot;Availability and Performance Blade &quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;The main topics presented are as follows:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;strong&gt;Failed Requests:&lt;/strong&gt; Percentage of requests that have failed within the specified time range.&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;Performance:&lt;/strong&gt; Response time at the 90th percentile for the specified time range.&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;CPU Usage:&lt;/strong&gt; Maximum percentage of CPU Usage per instance over the specified time range.&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;Memory Usage:&lt;/strong&gt; Maximum Private bytes of memory usage for the current app.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2 id=&quot;analyze-high-cpu-usage&quot;&gt;Analyze high CPU usage&lt;/h2&gt;
+
+&lt;p&gt;High CPU Analysis helps with troubleshooting issues related to the CPU.&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;Click on the &lt;strong&gt;High CPU Analysis&lt;/strong&gt; on the left-hand menu.&lt;/li&gt;
+  &lt;li&gt;Click the &lt;strong&gt;App Service Plan Density&lt;/strong&gt;. This check will ensure the App Service Plan is not over the safe limit or overstuffed due to many apps in the service plan. In the post, we are only running three apps in the App Service Plan which is within safe limits for the SKU.&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;&lt;img src=&quot;/AppService/media/2020/09/high-cpu-analysis-blade.png&quot; alt=&quot;High CPU Analysis Blade &quot; /&gt;&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;Expand the insight for &lt;strong&gt;One Web App Causing High CPU Usage&lt;/strong&gt;. This will identify the app consuming the maximum CPU resource on the App Service Plan.&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;Notice the app &lt;strong&gt;demohighcpu&lt;/strong&gt; is consuming the highest CPU. This is different from the app we are currently looking at &lt;strong&gt;demotroubleshootingapp&lt;/strong&gt;. The tool suggests to further debug the app &lt;strong&gt;demohighcpu&lt;/strong&gt;.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/AppService/media/2020/09/high-cpu-analysis-blade-dropdown.png&quot; alt=&quot;High CPU Analysis Blade. App Service Plan Density Check &quot; /&gt;&lt;/p&gt;
+
+&lt;h2 id=&quot;inspect-cpu-usage-by-instance&quot;&gt;Inspect CPU usage by instance&lt;/h2&gt;
+
+&lt;p&gt;Below you can see the overall CPU usage for all the instances associated with the App Service Plan. In this example the app is running in two instances that are consuming high CPU.&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Click on the drop-down arrow for &lt;strong&gt;Overall CPU Usage per Instance&lt;/strong&gt;.&lt;/li&gt;
+  &lt;li&gt;Hover over the graph of &lt;strong&gt;Overall CPU Usage Per Instance&lt;/strong&gt;.&lt;/li&gt;
+  &lt;li&gt;You can see CPU consumption of each instance.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;img src=&quot;/AppService/media/2020/09/high-cpu-overall-cpu-per-instance-dropdown.png&quot; alt=&quot;Overall CPU per Instance Graph&quot; /&gt;&lt;/p&gt;
+
+&lt;h2 id=&quot;cpu-drill-down&quot;&gt;CPU Drill Down&lt;/h2&gt;
+
+&lt;p&gt;Below the graph you can see a drill down view that displays the App-level CPU consumption for the app running on the same App Service plan. This tool identifies each individual apps running in the instance. By default, the instance with the maximum CPU usage will display first. In this example we can see the CPU maximum usage and average of &lt;strong&gt;demohighcpu&lt;/strong&gt;.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/AppService/media/2020/09/high-cpu-drill-down-dropdown.png&quot; alt=&quot;CPU Drill Down. Instance View graph&quot; /&gt;&lt;/p&gt;
+
+&lt;h2 id=&quot;app-level-cpu-consumption&quot;&gt;App Level CPU Consumption&lt;/h2&gt;
+
+&lt;p&gt;Next, you can see a process level breakdown of each app. By default, the app with the maximum CPU is preselected.&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Next to &lt;strong&gt;Select the app&lt;/strong&gt;, click on the app name.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;A drop-down view appears. You can switch between apps running on the same app service plan. In the example, you can see a breakdown of the process name and process ID.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/AppService/media/2020/09/high-cpu-app-level-cpu-consumption.png&quot; alt=&quot;App Level CPU Consumption Graph&quot; /&gt;&lt;/p&gt;
+
+&lt;h2 id=&quot;whats-next&quot;&gt;What’s Next?&lt;/h2&gt;
+
+&lt;p&gt;After identifying the app causing high CPU, debug the app to identify why the CPU is high. The next article will go over the techniques you can use to debug the app. Some possible mitigations you can apply are:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Restart the App as that may reduce the high CPU usage temporarily.&lt;/li&gt;
+  &lt;li&gt;Upgrading to the next tier can give you more resources if the app is consuming high CPU and you are on a lower tier.&lt;/li&gt;
+  &lt;li&gt;If multiple apps are experiencing high CPU due to an increase in requests, upgrading your App Service Plan to the next tier will allow it to benefit from an increase in scale.&lt;/li&gt;
+  &lt;li&gt;Isolating some apps to a dedicated app service plan can reduce the impact of other essential apps.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;In the example, we saw &lt;strong&gt;demohighcpu&lt;/strong&gt; is consuming the maximum CPU. Next, we will debug the app further to identify the cause of the high CPU in the next post. If you want to watch an in-depth tutorial on this topic, click on the video below!&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&quot;https://www.youtube.com/watch/tavdGmIX0xg&quot;&gt;YouTube Video: How to identify and diagnose apps with high CPU: Part 1 | Azure App Service&lt;/a&gt;&lt;/p&gt;</content><author><name>Azure App Service</name></author><category term="Diagnositcs" /><summary type="html">This is part one of our deep dive on Diagnosing CPU utilization issues in Azure App Service. In this post, you will learn about measuring CPU utilization for all apps hosted in an App Service Plan and identifying apps that are consuming maximum CPU resources.</summary></entry><entry><title type="html">Deploy your resources on the new Premium v3 SKU with an ARM template</title><link href="https://azure.github.io/AppService/2020/10/02/Deploy-your-resources-on-the-new-Premium-v3-SKU-with-an-ARM-template.html" rel="alternate" type="text/html" title="Deploy your resources on the new Premium v3 SKU with an ARM template" /><published>2020-10-02T00:00:00+00:00</published><updated>2020-10-02T00:00:00+00:00</updated><id>https://azure.github.io/AppService/2020/10/02/Deploy%20your%20resources%20on%20the%20new%20Premium%20v3%20SKU%20with%20an%20ARM%20template</id><content type="html" xml:base="https://azure.github.io/AppService/2020/10/02/Deploy-your-resources-on-the-new-Premium-v3-SKU-with-an-ARM-template.html">&lt;p&gt;The Premium v3 hardware tier, previously &lt;a href=&quot;https://aka.ms/appservice2020&quot;&gt;announced at Microsoft Ignite 2020&lt;/a&gt;, is now available for you to deploy your applications to.  This new hardware tier introduces new CPU and memory options, enabling deployment of more apps per App Service Plan and better support for large enterprise applications and content management systems.  With additional price points for dev/test and production workloads and Reserved Instance Pricing starting November 1st*,  Premium v3 is our most cost-effective and performant offering ever.&lt;/p&gt;
+
+&lt;p&gt;Portal updates are rolling out now to enable the new hardware option, but you can still deploy resources via ARM templates, Azure CLI and PowerShell.  This tutorial walks you through creating a new Resource Group, Pv3 App Service Plan and a Windows Container Web App using an Azure Resource Manager (ARM) template.&lt;/p&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;Premium v3 is the only hardware option that will be available for Windows container apps as it supports Hyper-V, the chosen security mode for a multi-tenant architecture.&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;Premium v3 is an option in the regions below. Premium v3 will be available in more regions in the future.&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;West US 2&lt;/li&gt;
+  &lt;li&gt;South Central US&lt;/li&gt;
+  &lt;li&gt;UK South&lt;/li&gt;
+  &lt;li&gt;Southeast Asia&lt;/li&gt;
+  &lt;li&gt;West Europe&lt;/li&gt;
+  &lt;li&gt;East US&lt;/li&gt;
+  &lt;li&gt;East US 2&lt;/li&gt;
+  &lt;li&gt;Australia East&lt;/li&gt;
+  &lt;li&gt;North Europe&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2 id=&quot;create-your-json-template&quot;&gt;Create your JSON template&lt;/h2&gt;
+
+&lt;p&gt;For those not familiar with ARM Templates, they amount to a JSON file which will define the necessary parameters and resources.  The following template creates a Premium v3 App Service Plan and Windows container Web App.&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;Open a New File in Visual Studio Code or your IDE of choice&lt;/li&gt;
+  &lt;li&gt;Create a JSON file named &lt;em&gt;azuredeploy.json&lt;/em&gt;&lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;Copy the below template in its entirety and replace any existing brackets in your new file&lt;/p&gt;
+
+    &lt;div class=&quot;language-json highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+    &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;$schema&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+    &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;contentVersion&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;1.0.0.0&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+    &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;parameters&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+        &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;appServiceWebAppName&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+            &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;type&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;String&quot;&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+        &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;},&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+        &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;appServicePlanName&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+            &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;type&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;String&quot;&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+        &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+    &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;},&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+    &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;resources&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+        &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+            &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;type&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;Microsoft.Web/sites&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+            &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;name&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;[parameters('appServiceWebAppName')]&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+            &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;apiVersion&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;2016-03-01&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+            &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;location&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;[resourceGroup().location]&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+            &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;tags&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+                &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;[concat('hidden-related:', subscription().id, '/resourcegroups/', resourceGroup().name, '/providers/Microsoft.Web/serverfarms/', parameters('appServicePlanName'))]&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;empty&quot;&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+            &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;},&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+            &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;properties&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+                &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;name&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;[parameters('appServiceWebAppName')]&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+                &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;siteConfig&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+                    &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;appSettings&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+                        &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+                            &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;name&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;WEBSITES_ENABLE_APP_SERVICE_STORAGE&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+                            &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;value&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;false&quot;&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+                        &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+                    &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;],&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+                    &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;appCommandLine&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+                    &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;windowsFxVersion&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;DOCKER|microsoft/iis&quot;&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+                &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;},&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+                &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;serverFarmId&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;[concat(subscription().id, '/resourcegroups/', resourceGroup().name, '/providers/Microsoft.Web/serverfarms/', parameters('appServicePlanName'))]&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+                &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;hostingEnvironment&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;&quot;&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+            &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;},&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+            &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;dependsOn&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+                &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;[concat('Microsoft.Web/serverfarms/', parameters('appServicePlanName'))]&quot;&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+            &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+        &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;},&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+        &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+            &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;type&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;Microsoft.Web/serverfarms&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+            &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;sku&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+                &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;Name&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;P1v3&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+                &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;Tier&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;PremiumV3&quot;&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;                
+            &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;},&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+            &lt;/span&gt;&lt;span class=&quot;err&quot;&gt;//For&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;err&quot;&gt;Windows&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;err&quot;&gt;code&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;err&quot;&gt;apps&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;err&quot;&gt;set&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;err&quot;&gt;the&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;err&quot;&gt;kind&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;err&quot;&gt;parameter&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;err&quot;&gt;to&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;app&quot;&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; 
+            &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;kind&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;windows&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+            &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;name&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;[parameters('appServicePlanName')]&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+            &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;apiVersion&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;2016-09-01&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+            &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;location&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;[resourceGroup().location]&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+            &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;properties&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+                &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;name&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;[parameters('appServicePlanName')]&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+                &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;workerSizeId&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;0&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+                &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;numberOfWorkers&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;1&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+                &lt;/span&gt;&lt;span class=&quot;err&quot;&gt;//&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;err&quot;&gt;For&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;err&quot;&gt;Windows&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;err&quot;&gt;code&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;err&quot;&gt;apps&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;err&quot;&gt;set&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;err&quot;&gt;the&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;err&quot;&gt;hyperv&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;err&quot;&gt;parameter&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;err&quot;&gt;to&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kc&quot;&gt;false&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+                &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;hyperv&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kc&quot;&gt;true&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;                
+                &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;hostingEnvironment&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;&quot;&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+            &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+        &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+    &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
+  &lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h2 id=&quot;use-azure-cli-to-deploy-your-template&quot;&gt;Use Azure CLI to deploy your template&lt;/h2&gt;
+
+&lt;p&gt;ARM deployments can be managed through the Azure CLI or Powershell.  In this example, we will be using the Azure CLI.  If you’d rather use Powershell, please see the instructions &lt;a href=&quot;https://docs.microsoft.com/azure/azure-resource-manager/templates/template-tutorial-create-first-template?tabs=azure-powershell&quot;&gt;here&lt;/a&gt;.&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;First, open Powershell and run &lt;strong&gt;az login&lt;/strong&gt; to login to your Azure account&lt;/li&gt;
+  &lt;li&gt;Use the &lt;strong&gt;az account set –subscription&lt;/strong&gt; &lt;em&gt;your-subscription-id&lt;/em&gt; to set your desired subscription for your resources&lt;/li&gt;
+  &lt;li&gt;Then, create your resource group using &lt;strong&gt;az group create –name&lt;/strong&gt; &lt;em&gt;my-resources-group-name&lt;/em&gt; &lt;strong&gt;–location&lt;/strong&gt; &lt;em&gt;“West Central US”&lt;/em&gt;&lt;/li&gt;
+  &lt;li&gt;Once you have created the resource group in the correct location, you can then deploy your ARM template&lt;/li&gt;
+  &lt;li&gt;Enter &lt;strong&gt;az deployment group create –name&lt;/strong&gt; &lt;em&gt;my-template-name&lt;/em&gt; &lt;strong&gt;–resource-group&lt;/strong&gt; &lt;em&gt;my-resource-group-name&lt;/em&gt; &lt;strong&gt;–template-file&lt;/strong&gt; &lt;em&gt;“path\to\azuredeploy.json”&lt;/em&gt;&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;You will then be prompted to enter string values for the following parameters:&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;appServiceWebAppName: &lt;em&gt;web-app-name&lt;/em&gt;&lt;/li&gt;
+  &lt;li&gt;appServicePlanName: &lt;em&gt;app-service-plan-name&lt;/em&gt;&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;These two values will be the names of the two artifacts of the ARM template, which is creating both your Pv3 App Service Plan and your Web App.&lt;/p&gt;
+
+&lt;h2 id=&quot;verify-deployment&quot;&gt;Verify Deployment&lt;/h2&gt;
+&lt;p&gt;Once you have completed the steps above, you can head over to the portal and search for the resource group you just created to verify the resources deployed from the ARM template.  You have now successfully deployed to the new Premium v3 SKU creating the following resources:&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;Resource Group&lt;/li&gt;
+  &lt;li&gt;App Service Plan&lt;/li&gt;
+  &lt;li&gt;Web App&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h2 id=&quot;references&quot;&gt;References&lt;/h2&gt;
+&lt;p&gt;&lt;a href=&quot;https://docs.microsoft.com/azure/app-service/app-service-configure-premium-tier&quot;&gt;Configure Pv3 tier for Azure App Service&lt;/a&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Reserved Instances are offered in 1 and 3 year options.&lt;/li&gt;
+&lt;/ul&gt;</content><author><name>Azure App Service</name></author><category term="windows containers" /><summary type="html">The Premium v3 hardware tier, previously announced at Microsoft Ignite 2020, is now available for you to deploy your applications to. This new hardware tier introduces new CPU and memory options, enabling deployment of more apps per App Service Plan and better support for large enterprise applications and content management systems. With additional price points for dev/test and production workloads and Reserved Instance Pricing starting November 1st*, Premium v3 is our most cost-effective and performant offering ever.</summary></entry><entry><title type="html">Security for Windows containers using Hyper-V Isolation</title><link href="https://azure.github.io/AppService/2020/09/29/Security-for-Windows-containers-using-Hyper-V-Isolation.html" rel="alternate" type="text/html" title="Security for Windows containers using Hyper-V Isolation" /><published>2020-09-29T00:00:00+00:00</published><updated>2020-09-29T00:00:00+00:00</updated><id>https://azure.github.io/AppService/2020/09/29/Security%20for%20Windows%20containers%20using%20Hyper-V%20Isolation</id><content type="html" xml:base="https://azure.github.io/AppService/2020/09/29/Security-for-Windows-containers-using-Hyper-V-Isolation.html">&lt;p&gt;Windows containers on App Service enable you to modernize your Windows applications so you can bring along dependencies or lift-and-shift your current application. To make sure that your container applications are safe and secure in App Service’s multi-tenant architecture, we use Hyper-V isolation to provide a security boundary around your Windows container apps.&lt;/p&gt;
+
+&lt;h2 id=&quot;what-is-hyper-v&quot;&gt;What is Hyper-V?&lt;/h2&gt;
+
+&lt;p&gt;Hyper-V is an isolation mode for Windows containers featuring hardware-level isolation.  This virtual isolation mode allows for multiple container instances to concurrently run in a secure manner on a single host. Hyper-V isolation effectively gives each container its own kernel while providing hardware isolation and a security boundary around the containers, as opposed to process isolation which shares the kernel with other containers.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/AppService/media/2020/09/hyperv.png&quot; alt=&quot;Hyper-V&quot; /&gt;&lt;/p&gt;
+
+&lt;h2 id=&quot;why-app-service-uses-hyper-v-isolation&quot;&gt;Why App Service uses Hyper-V Isolation&lt;/h2&gt;
+
+&lt;p&gt;App Service runs on a multi-tenant architecture and uses Hyper-V isolation for running Windows Containers.  Hyper-V runs your containers within independent security boundaries, where your container’s resources are isolated from other containers as well as the underlying VM.  When creating an App Service Plan for Windows containers, the underlying VM is also dedicated to a single customer providing another level of security between applications.  With Windows containers on App Service you can also install and run custom software and dependencies inside of your container.&lt;/p&gt;
+
+&lt;p&gt;The other benefit obtained from using Hyper-V isolation includes broader &lt;a href=&quot;https://docs.microsoft.com/virtualization/windowscontainers/deploy-containers/version-compatibility?tabs=windows-server-2004%2Cwindows-10-2004#windows-server-host-os-compatibility&quot;&gt;compatibility&lt;/a&gt; between the underlying VM host and the container versions so you can run your choice of base images with compatibility across Windows Server 2019, 2004, 1909, and 1903.&lt;/p&gt;
+
+&lt;h3 id=&quot;resources&quot;&gt;Resources&lt;/h3&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;&lt;a href=&quot;https://docs.microsoft.com/virtualization/windowscontainers/manage-containers/hyperv-container#:~:text=With%2520Hyper-V%2520isolation%252C%2520multiple%2520container%2520instances%2520run%2520concurrently%2Ceach%2520container%2520as%2520well%2520as%2520the%2520container%2520host.&quot;&gt;Windows container Isolation Modes&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://docs.microsoft.com/virtualization/windowscontainers/deploy-containers/version-compatibility?tabs=windows-server-2004%2Cwindows-10-2004#windows-server-host-os-compatibility&quot;&gt;Windows Server compatible versions&lt;/a&gt;&lt;/li&gt;
+&lt;/ol&gt;</content><author><name>Azure App Service</name></author><category term="Windows containers" /><summary type="html">Windows containers on App Service enable you to modernize your Windows applications so you can bring along dependencies or lift-and-shift your current application. To make sure that your container applications are safe and secure in App Service’s multi-tenant architecture, we use Hyper-V isolation to provide a security boundary around your Windows container apps.</summary></entry><entry><title type="html">Public Preview of the new Deployment Center</title><link href="https://azure.github.io/AppService/2020/09/23/deployment-center-v2.html" rel="alternate" type="text/html" title="Public Preview of the new Deployment Center" /><published>2020-09-23T00:00:00+00:00</published><updated>2020-09-23T00:00:00+00:00</updated><id>https://azure.github.io/AppService/2020/09/23/deployment-center-v2</id><content type="html" xml:base="https://azure.github.io/AppService/2020/09/23/deployment-center-v2.html">&lt;p&gt;The first version of the App Service Deployment Center has been generally available &lt;a href=&quot;https://azure.microsoft.com/updates/azure-app-service-deployment-center-now-available/&quot;&gt;since late 2018&lt;/a&gt;. The Deployment Center gives a centralized view of all the deployment methods for your web app. It also has a guided experience for setting up continuous integration and delivery (CI/CD) pipelines from source control or container registries.&lt;/p&gt;
+
+&lt;p&gt;Today, we are happy to announce that a new version of the App Service Deployment Center is available for technical preview in the Azure Portal. The new experience was built with usability and clarity in mind, especially for developers that are new to App Service. Whether you’re deploying code or containers, the new App Service Deployment Center makes it easy.&lt;/p&gt;
+
+&lt;h2 id=&quot;easy-cicd-for-code&quot;&gt;Easy CI/CD for Code&lt;/h2&gt;
+
+&lt;p&gt;The Deployment Center makes it easy to create a CI/CD pipeline from your GitHub, BitBucket, or an external Git repository. If you’re using GitHub, the Deployment Center can also create a GitHub Actions workflow for you! See our &lt;a href=&quot;https://azure.github.io/AppService/2020/08/19/github-actions-code-ga.html&quot;&gt;previous article&lt;/a&gt; for more information. If you’re not using GitHub, you can still create a CI/CD pipeline using the Kudu build service.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/AppService/media/2020/09/deployment-center-code.png&quot; alt=&quot;Use the deployment center to wire up GitHub Actions for CI/CD&quot; /&gt;&lt;/p&gt;
+
+&lt;h2 id=&quot;continuously-deploy-containers&quot;&gt;Continuously deploy containers&lt;/h2&gt;
+
+&lt;p&gt;With the new Deployment Center, you can easily set up a CI/CD pipeline with GitHub Actions for your containerized applications as well. Before today, you would have to create the GitHub Actions CI/CD workflow file yourself. Now you can go to the Deployment Center in the Portal and follow the on-screen, step-by-step instructions to set up the CI/CD automation. &lt;em&gt;No more YAML indentation errors!&lt;/em&gt; The Portal will guide you through setting up a GitHub Actions workflow to build your container, push it to a registry, and pull it to the web app whenever there is a new commit on your specified branch.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/AppService/media/2020/09/deployment-center-container.png&quot; alt=&quot;Use the deployment center to wire up GitHub Actions for CI/CD&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;GitHub Actions is free for public repositories. For private repositories, please see the &lt;a href=&quot;https://github.com/pricing&quot;&gt;GitHub pricing page&lt;/a&gt;.&lt;/p&gt;</content><author><name>Azure App Service</name></author><category term="deployment" /><summary type="html">The first version of the App Service Deployment Center has been generally available since late 2018. The Deployment Center gives a centralized view of all the deployment methods for your web app. It also has a guided experience for setting up continuous integration and delivery (CI/CD) pipelines from source control or container registries. Today, we are happy to announce that a new version of the App Service Deployment Center is available for technical preview in the Azure Portal. The new experience was built with usability and clarity in mind, especially for developers that are new to App Service. Whether you’re deploying code or containers, the new App Service Deployment Center makes it easy. Easy CI/CD for Code The Deployment Center makes it easy to create a CI/CD pipeline from your GitHub, BitBucket, or an external Git repository. If you’re using GitHub, the Deployment Center can also create a GitHub Actions workflow for you! See our previous article for more information. If you’re not using GitHub, you can still create a CI/CD pipeline using the Kudu build service. Continuously deploy containers With the new Deployment Center, you can easily set up a CI/CD pipeline with GitHub Actions for your containerized applications as well. Before today, you would have to create the GitHub Actions CI/CD workflow file yourself. Now you can go to the Deployment Center in the Portal and follow the on-screen, step-by-step instructions to set up the CI/CD automation. No more YAML indentation errors! The Portal will guide you through setting up a GitHub Actions workflow to build your container, push it to a registry, and pull it to the web app whenever there is a new commit on your specified branch. GitHub Actions is free for public repositories. For private repositories, please see the GitHub pricing page.</summary></entry><entry><title type="html">App Service Environment v3 (ASEv3) public preview pre-announcement</title><link href="https://azure.github.io/AppService/2020/09/22/asev3-public-preview-preannouncement.html" rel="alternate" type="text/html" title="App Service Environment v3 (ASEv3) public preview pre-announcement" /><published>2020-09-22T00:00:00+00:00</published><updated>2020-09-22T00:00:00+00:00</updated><id>https://azure.github.io/AppService/2020/09/22/asev3-public-preview-preannouncement</id><content type="html" xml:base="https://azure.github.io/AppService/2020/09/22/asev3-public-preview-preannouncement.html">&lt;p&gt;The App Service Environment v3 (ASEv3) project is a realization of several years of infrastructure development to enable a best-in-class, network isolated application hosting PaaS service. Today we are happy to pre-announce the upcoming public preview of ASEv3. The ASEv3 platform is expected to land in public preview in early November in a limited set of regions.&lt;/p&gt;
+
+&lt;h2 id=&quot;asev3-overview&quot;&gt;ASEv3 Overview&lt;/h2&gt;
+
+&lt;p&gt;The App Service Environment (ASE) is a single tenant instance of the Azure App Service that runs in a customers Azure Virtual Network (VNet). It solves many isolation scenarios for some of our top customers in a way you cannot with the multi-tenant service. While the service is used widely and is well received, there are some areas  we wanted to improve.&lt;/p&gt;
+
+&lt;p&gt;In ASEv3, the underlying technology is based on Virtual Machine Scale Sets (VMSS) instead of Cloud Services. This opens the door to a number of improvements including better load balancers, zone redundancy and multiple other things. Also in ASEv3, we have eliminated the challenge of managing the ASE dependency traffic. With ASEv3, you no longer have any inbound or outbound management traffic in the customer VNet. This vastly simplifies ASE deployment and management.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/AppService/media/2020/09/asev2-to-asev3-dependencies.png&quot; alt=&quot;ASEv2 to ASEv3 dependencies diagram&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;The end result is a single tenant system that has no internet hosted dependencies being called from the customer network. Customers can secure their workloads to their heart’s content and Microsoft can better secure the infrastructure without any impact on customer workloads.&lt;/p&gt;
+
+&lt;p&gt;In addition to operational improvements, we’re also making this new ASE more cost-effective for customers. As part of our Isolated v2 plan, we’re reducing the PAYG rates and eliminating the per instance stamp fee for ASE v3, reducing the cost of deployment by up to 80%.&lt;/p&gt;</content><author><name>Azure App Service</name></author><category term="networking" /><category term="ASE" /><summary type="html">The App Service Environment v3 (ASEv3) project is a realization of several years of infrastructure development to enable a best-in-class, network isolated application hosting PaaS service. Today we are happy to pre-announce the upcoming public preview of ASEv3. The ASEv3 platform is expected to land in public preview in early November in a limited set of regions.</summary></entry><entry><title type="html">Public Preview of JBoss EAP on App Service</title><link href="https://azure.github.io/AppService/2020/09/22/jboss-public-preview.html" rel="alternate" type="text/html" title="Public Preview of JBoss EAP on App Service" /><published>2020-09-22T00:00:00+00:00</published><updated>2020-09-22T00:00:00+00:00</updated><id>https://azure.github.io/AppService/2020/09/22/jboss-public-preview</id><content type="html" xml:base="https://azure.github.io/AppService/2020/09/22/jboss-public-preview.html">&lt;p&gt;For several years, Red Hat and Microsoft have &lt;a href=&quot;https://www.redhat.com/en/red-hat-microsoft-partnership&quot;&gt;partnered&lt;/a&gt; to create cloud solutions that enable enterprises to achieve more. Today, we are happy to announce that Red Hat JBoss Enterprise Application Platform (EAP) is now in Public Preview on Azure App Service. App Service has supported Tomcat and Java SE applications on Linux since 2018. Since then, our customers made it clear that they wanted an equivalent service for their Jakarta EE applications.&lt;/p&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;&lt;strong&gt;&lt;a href=&quot;https://github.com/Azure-Samples/jboss-on-app-service&quot;&gt;Try JBoss EAP on App Service&lt;/a&gt; today&lt;/strong&gt; and &lt;a href=&quot;mailto:java-on-app-service@microsoft.com&quot;&gt;send us your feedback&lt;/a&gt;.&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;&lt;a href=&quot;https://portal.azure.com/#create/Microsoft.WebSite&quot; class=&quot;align-center&quot;&gt;&lt;img src=&quot;/AppService/media/2020/09/jboss-create.png&quot; alt=&quot;Create a JBoss EAP site from the Azure Portal&quot; /&gt;&lt;/a&gt;&lt;/p&gt;
+
+&lt;h2 id=&quot;jboss-eap-across-azure&quot;&gt;JBoss EAP across Azure&lt;/h2&gt;
+
+&lt;p&gt;Whether your organization is running a heavily customized, clustered JBoss EAP deployment or has embraced container technologies, Azure has a cloud service to fit your needs. With Red Hat Enterprise Linux on Azure Virtual Machine Scale Sets (VMSS), you can easily lift-and-shift your on-prem JBoss EAP deployments. &lt;a href=&quot;https://www.redhat.com/en/about/press-releases/red-hat-and-microsoft-fuel-hybrid-cloud-development-azure-red-hat-openshift&quot;&gt;Azure Red Hat Openshift&lt;/a&gt; combines the innovation of enterprise Kubernetes with the world’s leading enterprise Linux platform, Red Hat Enterprise Linux.&lt;/p&gt;
+
+&lt;p&gt;App Service gives organizations the option to leverage a managed Platform-as-a-Service (PaaS) for their cloud migrations. App Service provides APIs for deployment, features for network isolation, and auto scaling.&lt;/p&gt;
+
+&lt;h2 id=&quot;jboss-eap-on-app-service&quot;&gt;JBoss EAP on App Service&lt;/h2&gt;
+
+&lt;p&gt;To create a JBoss EAP instance, head to the Azure Portal and create a new web app. In the stack selector, choose &lt;strong&gt;JBoss EAP 7.2 (Preview)&lt;/strong&gt;. JBoss EAP on App Service is jointly developed and supported by Red Hat and Azure. At General Availability, any support cases concerning the JBoss server will be handled by the experts at Red Hat. Any cases concerning the App Service platform will be resolved by Azure support. Developer tooling for JBoss EAP will be released during the Public Preview release. Subscribe to the App Service Blog to stay up-to-date on news regarding Maven plugins, GitHub Actions, and IDE plugins.&lt;/p&gt;
+
+&lt;h3 id=&quot;public-preview-release-notes&quot;&gt;Public Preview release notes&lt;/h3&gt;
+
+&lt;p&gt;You can create a JBoss EAP 7.2 instance on App Service in the Azure Portal. Simply select “JBoss EAP 7.2 (Preview)” in the language stack dropdown. JBoss  EAP on App Service is available on all hardware tiers at current prices. As a preview release, there is no commercial support offering and use of the preview is limited to development and testing of your applications. The General Availability release of JBoss EAP on App Service will include a service fee for the integrated technical support. If you create a JBoss EAP instance on App Service, you will receive an email notice prior to the GA release with more details on the pricing changes. Azure will resolve all support cases until the service fee is added at General Availability.&lt;/p&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;&lt;strong&gt;&lt;a href=&quot;https://github.com/Azure-Samples/jboss-on-app-service&quot;&gt;Try JBoss EAP on App Service&lt;/a&gt; today&lt;/strong&gt; and &lt;a href=&quot;mailto:java-on-app-service@microsoft.com&quot;&gt;send us your feedback&lt;/a&gt;.&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;h2 id=&quot;helpful-links&quot;&gt;Helpful links&lt;/h2&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;a href=&quot;https://docs.microsoft.com/en-us/azure/app-service/configure-language-java?pivots=platform-linux&quot;&gt;Java on App Service documentation&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://github.com/Azure-Samples/jboss-on-app-service&quot;&gt;JBoss EAP on App Service Tutorial&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;</content><author><name>Azure App Service</name></author><category term="java" /><summary type="html">For several years, Red Hat and Microsoft have partnered to create cloud solutions that enable enterprises to achieve more. Today, we are happy to announce that Red Hat JBoss Enterprise Application Platform (EAP) is now in Public Preview on Azure App Service. App Service has supported Tomcat and Java SE applications on Linux since 2018. Since then, our customers made it clear that they wanted an equivalent service for their Jakarta EE applications. Try JBoss EAP on App Service today and send us your feedback. JBoss EAP across Azure Whether your organization is running a heavily customized, clustered JBoss EAP deployment or has embraced container technologies, Azure has a cloud service to fit your needs. With Red Hat Enterprise Linux on Azure Virtual Machine Scale Sets (VMSS), you can easily lift-and-shift your on-prem JBoss EAP deployments. Azure Red Hat Openshift combines the innovation of enterprise Kubernetes with the world’s leading enterprise Linux platform, Red Hat Enterprise Linux. App Service gives organizations the option to leverage a managed Platform-as-a-Service (PaaS) for their cloud migrations. App Service provides APIs for deployment, features for network isolation, and auto scaling. JBoss EAP on App Service To create a JBoss EAP instance, head to the Azure Portal and create a new web app. In the stack selector, choose JBoss EAP 7.2 (Preview). JBoss EAP on App Service is jointly developed and supported by Red Hat and Azure. At General Availability, any support cases concerning the JBoss server will be handled by the experts at Red Hat. Any cases concerning the App Service platform will be resolved by Azure support. Developer tooling for JBoss EAP will be released during the Public Preview release. Subscribe to the App Service Blog to stay up-to-date on news regarding Maven plugins, GitHub Actions, and IDE plugins. Public Preview release notes You can create a JBoss EAP 7.2 instance on App Service in the Azure Portal. Simply select “JBoss EAP 7.2 (Preview)” in the language stack dropdown. JBoss EAP on App Service is available on all hardware tiers at current prices. As a preview release, there is no commercial support offering and use of the preview is limited to development and testing of your applications. The General Availability release of JBoss EAP on App Service will include a service fee for the integrated technical support. If you create a JBoss EAP instance on App Service, you will receive an email notice prior to the GA release with more details on the pricing changes. Azure will resolve all support cases until the service fee is added at General Availability. Try JBoss EAP on App Service today and send us your feedback. Helpful links Java on App Service documentation JBoss EAP on App Service Tutorial</summary></entry><entry><title type="html">Troubleshoot ASP.NET assembly loading failures using Fusion Logging</title><link href="https://azure.github.io/AppService/2020/09/16/Fusion-Logging-for-ASP.NET-Apps.html" rel="alternate" type="text/html" title="Troubleshoot ASP.NET assembly loading failures using Fusion Logging" /><published>2020-09-16T00:00:00+00:00</published><updated>2020-09-16T00:00:00+00:00</updated><id>https://azure.github.io/AppService/2020/09/16/Fusion%20Logging%20for%20ASP.NET%20Apps</id><content type="html" xml:base="https://azure.github.io/AppService/2020/09/16/Fusion-Logging-for-ASP.NET-Apps.html">&lt;p&gt;ASP.NET Framework has fusion &lt;a href=&quot;https://docs.microsoft.com/en-us/dotnet/framework/tools/fuslogvw-exe-assembly-binding-log-viewer&quot;&gt;Assembly Binding logging&lt;/a&gt; (aka Fusion Logging) which allows you to debug assembly load failures in your .NET applications. Fusion logging comes handy when your application is referencing assemblies or external nuget packages and you are encountering assembly binding failures.&lt;/p&gt;
+
+&lt;p&gt;We are pleased to announce that you can &lt;strong&gt;enable Fusion logging in Azure App Service on a per-app basis&lt;/strong&gt; and troubleshoot assembly failures easily.&lt;/p&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;Currently offered in App Service for Windows web apps only and applies to classic ASP.NET Framework apps. This logging &lt;strong&gt;does not&lt;/strong&gt; apply to ASP.NET Core apps.&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;h2 id=&quot;enabling-fusion-logging&quot;&gt;Enabling Fusion Logging&lt;/h2&gt;
+
+&lt;p&gt;To enable fusion logging, follow these steps&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;Go to the &lt;a href=&quot;https://portal.azure.com&quot;&gt;Azure Portal&lt;/a&gt;.&lt;/li&gt;
+  &lt;li&gt;Click on &lt;strong&gt;Configuration&lt;/strong&gt; for your App.&lt;/li&gt;
+  &lt;li&gt;Under the &lt;strong&gt;Application Settings&lt;/strong&gt; section, add a new application setting with the name &lt;strong&gt;WEBSITE_FUSIONLOGGING_ENABLED&lt;/strong&gt; and a value of &lt;strong&gt;1&lt;/strong&gt;.&lt;/li&gt;
+  &lt;li&gt;Click the &lt;strong&gt;Save&lt;/strong&gt; button.&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;Saving the application setting causes a restart of the app on all instances, so perform this step during low-usage hours.&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;After you save this app setting, fusion logging will be enabled for your app. All processes launched for your app (w3wp.exe, w3wp.exe for the Kudu site, and any child processes of these processes) will have fusion logging enabled. This means you can use this feature to troubleshooting assembly binding issues even in WebJobs. Enabling fusion logging on one app does not enable it for other apps in the App Service Plan.&lt;/p&gt;
+
+&lt;p&gt;After fusion logging is enabled, if you browse to the page that was failing to load an assembly, you will now see detailed fusion logs emitted in the actual error message itself. An example is shown below.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/AppService/media/2020/09/fusion-logging-error.PNG&quot; alt=&quot;Fusion logging&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Using fusion logging you can identify the exact assembly, the version, the location and other information about the whereabouts of the assembly. After you have diagnosed the root cause of the issue, be sure to &lt;strong&gt;remove the app setting&lt;/strong&gt;. Fusion logging incurs some performance impact on the runtime of the application and leaving it enabled is not recommended in production.&lt;/p&gt;</content><author><name>Azure App Service</name></author><category term="Diagnostics" /><summary type="html">ASP.NET Framework has fusion Assembly Binding logging (aka Fusion Logging) which allows you to debug assembly load failures in your .NET applications. Fusion logging comes handy when your application is referencing assemblies or external nuget packages and you are encountering assembly binding failures.</summary></entry><entry><title type="html">AppServiceAppLogs is now available for ASP .NET apps on Windows</title><link href="https://azure.github.io/AppService/2020/08/31/AzMon-AppServiceAppLogs.html" rel="alternate" type="text/html" title="AppServiceAppLogs is now available for ASP .NET apps on Windows" /><published>2020-08-31T00:00:00+00:00</published><updated>2020-08-31T00:00:00+00:00</updated><id>https://azure.github.io/AppService/2020/08/31/AzMon-AppServiceAppLogs</id><content type="html" xml:base="https://azure.github.io/AppService/2020/08/31/AzMon-AppServiceAppLogs.html">&lt;p&gt;We have added a new log type for ASP .NET web apps on Windows (ASP .NET Core support is not yet supported). The log type, &lt;strong&gt;AppServiceAppLogs&lt;/strong&gt;, captures your app’s log and error statements. This log type is part of the &lt;a href=&quot;https://azure.github.io/AppService/2019/11/01/App-Service-Integration-with-Azure-Monitor.html&quot;&gt;preview of App Service’s integration with Azure Monitor&lt;/a&gt;.&lt;/p&gt;
+
+&lt;h2 id=&quot;enable-appserivceapplogs-&quot;&gt;Enable AppSerivceAppLogs &lt;a name=&quot;enable-applogs&quot;&gt;&lt;/a&gt;&lt;/h2&gt;
+
+&lt;p&gt;Refer to &lt;a href=&quot;#https://azure.github.io/AppService/2019/11/01/App-Service-Integration-with-Azure-Monitor.html#create-a-diagnostic-setting&quot;&gt;how to create Diagnostic settings&lt;/a&gt; and enable &lt;strong&gt;AppServiceAppLogs&lt;/strong&gt; on the list.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/AppService/media/2020/08/enable-applogs.png&quot; alt=&quot;Enable App Logs&quot; class=&quot;align-center&quot; /&gt;&lt;/p&gt;
+
+&lt;h2 id=&quot;add-log-message-to-your-web-app&quot;&gt;Add log message to your web app&lt;/h2&gt;
+
+&lt;p&gt;To start using this log type, you need to &lt;a href=&quot;#update-web-config&quot;&gt;update the Web.config file&lt;/a&gt; and &lt;a href=&quot;#add-logs-to-code&quot;&gt;add log statements to your code&lt;/a&gt;. Then you can route logs to Log Analytics, Event Hubs, or a Storage Account.&lt;/p&gt;
+
+&lt;h3 id=&quot;update-your-webconfig-file-&quot;&gt;Update your Web.config file &lt;a name=&quot;update-web-config&quot;&gt;&lt;/a&gt;&lt;/h3&gt;
+
+&lt;p&gt;Add the following snippet to your Web.config file in order to declare usage of our &lt;a href=&quot;https://docs.microsoft.com/dotnet/framework/debug-trace-profile/how-to-create-and-initialize-trace-listeners&quot;&gt;Trace Listener&lt;/a&gt;. This will configure your application to direct its tracing outputs to our listener.. &lt;strong&gt;Logs will not show up if you don’t add this to the Web.config.&lt;/strong&gt;&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;  &amp;lt;system.diagnostics&amp;gt;
+    &amp;lt;trace&amp;gt;
+      &amp;lt;listeners&amp;gt;
+        &amp;lt;add name=&quot;AzureMonitorTraceListener&quot; type=&quot;Microsoft.WindowsAzure.WebSites.Diagnostics.AzureMonitorTraceListener, Microsoft.WindowsAzure.WebSites.Diagnostics, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35&quot; /&amp;gt;
+      &amp;lt;/listeners&amp;gt;
+    &amp;lt;/trace&amp;gt;
+  &amp;lt;/system.diagnostics&amp;gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h3 id=&quot;add-log-statements-to-your-code-&quot;&gt;Add log statements to your code &lt;a name=&quot;add-logs-to-code&quot;&gt;&lt;/a&gt;&lt;/h3&gt;
+
+&lt;p&gt;You can use the &lt;a href=&quot;https://docs.microsoft.com/dotnet/api/system.diagnostics.trace?view=netcore-3.1&quot;&gt;System.Diagnostics.Trace&lt;/a&gt; class to log information to the application diagnostic logs. For example:&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;System.Diagnostics.Trace.TraceError(&quot;Error found&quot;);
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h2 id=&quot;how-to-filter-log-trace-levels-sent-to-log-analyticsstorage-accountevent-hub-&quot;&gt;How to filter log trace levels sent to Log Analytics/Storage account/Event hub &lt;a name=&quot;app-setting-level&quot;&gt;&lt;/a&gt;&lt;/h2&gt;
+
+&lt;p&gt;If you have various trace levels in your web app but are only interested in having certain levels of logs sent to the logging endpoint, you can set a filter for the minimum level in your &lt;strong&gt;application settings&lt;/strong&gt; under &lt;strong&gt;Configuration&lt;/strong&gt;. &lt;strong&gt;&lt;em&gt;By default, even without the app setting, the minimum trace level is set to Warning.&lt;/em&gt;&lt;/strong&gt;&lt;/p&gt;
+
+&lt;h3 id=&quot;how-to-set-app-setting-for-appserviceapplogs-level&quot;&gt;How to set App setting for AppServiceAppLogs level&lt;/h3&gt;
+
+&lt;p&gt;The application setting name will be &lt;code class=&quot;highlighter-rouge&quot;&gt;APPSERVICEAPPLOGS_TRACE_LEVEL&lt;/code&gt; and the value will be the minimum level (ie. Error, Warning, Verbose, etc.). Refer to &lt;a href=&quot;https://docs.microsoft.com/dotnet/api/system.diagnostics.tracelevel?view=netframework-4.8&quot;&gt;TraceLevel&lt;/a&gt; for more info.&lt;/p&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;The trace level value is &lt;strong&gt;&lt;em&gt;case sensitive&lt;/em&gt;&lt;/strong&gt;. Make sure the first letter is uppercase and the rest is lowercase (ie. Error, Warning, etc.)&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;For example, if you are only interested in seeing logs that are of level Error and higher, you will set your application setting &lt;code class=&quot;highlighter-rouge&quot;&gt;APPSERVICEAPPLOGS_TRACE_LEVEL&lt;/code&gt; to &lt;strong&gt;Error&lt;/strong&gt;.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/AppService/media/2020/08/app-settings.png&quot; alt=&quot;App Settings&quot; class=&quot;align-center&quot; /&gt;&lt;/p&gt;
+
+&lt;h2 id=&quot;how-logs-show-up-in-log-analytics&quot;&gt;How logs show up in Log Analytics&lt;/h2&gt;
+
+&lt;p&gt;The texts of your logs will generally show up in the “Message” field in Log Analytics, but if you have an Error log, you will find the text in the “StackTrace” field. Look at the samples below and note the difference in the fields.&lt;/p&gt;
+
+&lt;p&gt;Below is a sample result from an Error log:&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/AppService/media/2020/08/error-logs-la-sample.png&quot; alt=&quot;App Settings&quot; class=&quot;align-center&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Below is a sample result from an Warning log:&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/AppService/media/2020/08/warning-logs-la-sample.png&quot; alt=&quot;App Settings&quot; class=&quot;align-center&quot; /&gt;&lt;/p&gt;
+
+&lt;h2 id=&quot;sample-queries-in-log-analytics&quot;&gt;Sample queries in Log Analytics&lt;/h2&gt;
+
+&lt;p&gt;You can use the different levels of logging such as Error, Information, and etc. in your application and this will show up in your logs in Log Analytics under the “Level” field. You are able to filter out logs based on the level. The example below shows how you can filter for only Error Level logs:&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;AppServiceAppLogs 
+| where Level == &quot;Error&quot;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h2 id=&quot;faq&quot;&gt;FAQ&lt;/h2&gt;
+
+&lt;p&gt;&lt;strong&gt;Q: I’m not seeing any logs on my Storage account/Log Analytics/Event Hub&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;A: On Windows, this log is currently only supported for ASP .NET applications. If your application isn’t an ASP .NET application, you won’t be seeing the logs. However, if your application is an ASP .NET application, there are a couple of possible reasons why your logs aren’t showing:&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;Did you enable the &lt;a href=&quot;#enable-applogs&quot;&gt;AppServiceAppLogs&lt;/a&gt;?&lt;/li&gt;
+  &lt;li&gt;Did you &lt;a href=&quot;#update-web-config&quot;&gt;update the Web.config file&lt;/a&gt;?&lt;/li&gt;
+  &lt;li&gt;Did you &lt;a href=&quot;#add-logs-to-code&quot;&gt;add logs to your code&lt;/a&gt;?&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;&lt;strong&gt;Q: Why aren’t my logs that are lower than Warning showing up?&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;A: By default, Warning logs and higher will be only be sent, however, you can set the minimum trace level of the logs you would like to see. Refer to &lt;a href=&quot;#app-setting-level&quot;&gt;how to filter log trace levels sent to Log Analytics/Storage account/Event hub&lt;/a&gt;. Note that the app setting is &lt;em&gt;case sensitive&lt;/em&gt;.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Q: Why can’t I see my Trace, Debug, or Info logs?&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;A: By default, Warning logs and higher will be only be sent, however, you can set the minimum trace level of the logs you would like to see. Refer to &lt;a href=&quot;#app-setting-level&quot;&gt;how to filter log trace levels sent to Log Analytics/Storage account/Event hub&lt;/a&gt;. Note that the app setting is &lt;em&gt;case sensitive&lt;/em&gt;.&lt;/p&gt;</content><author><name>Azure App Service</name></author><category term="monitoring" /><summary type="html">We have added a new log type for ASP .NET web apps on Windows (ASP .NET Core support is not yet supported). The log type, AppServiceAppLogs, captures your app’s log and error statements. This log type is part of the preview of App Service’s integration with Azure Monitor.</summary></entry></feed>
